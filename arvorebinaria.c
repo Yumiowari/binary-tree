@@ -12,19 +12,20 @@
 
 struct no{
     int chave;
+    int fb; // fator de balanceamento do nó
     struct no *esq; // filho da esquerda (< raiz)
     struct no *dir; // filho da direita (> raiz)
     struct no *pai; // raiz do nó (> || < raiz)
 };
 
-struct arvore{
+struct avl{
     struct no *sentinela; // nó para guardar o endereço em memória da árvore. Chave sempre -1000
     int qtd; // guarda a quantidade total de nós da árvore
 };
 
-arvore *criaArvore(){ // OK
+avl *criaArvore(){
     // iniciando o ponteiro para a árvore
-    arvore *arv = (arvore*) malloc(sizeof(arvore));
+    avl *arv = (avl*) malloc(sizeof(avl));
     if(arv != NULL){
     // iniciando a sentinela (ponteiro do tipo nó)
         no *sen = (no*) malloc(sizeof(no));
@@ -40,7 +41,7 @@ arvore *criaArvore(){ // OK
     return arv;
 }
 
-int insereNo(arvore *arv, int valor){ // ERRO AQUI!
+int insereNo(avl *arv, int valor){
     if(arv == NULL)return 0;
     no *n = (no*) malloc(sizeof(no));
     // nó a ser inserido
@@ -85,6 +86,9 @@ int insereNo(arvore *arv, int valor){ // ERRO AQUI!
             // se for menor
         }
 
+        // inicia o fb do nó
+        
+
         arv->qtd++;
         // incrementa o nó inserido
 
@@ -93,7 +97,7 @@ int insereNo(arvore *arv, int valor){ // ERRO AQUI!
     return 1;
 }
 
-int removeNo(arvore *arv, int valor){
+int removeNo(avl *arv, int valor){
 // em poucas palavras, no caso em que houver filhos, utiliza nós auxiliares para reunir os
 // nós soltos para manter a estrutura da árvore após a remoção
     if(arv == NULL)return 0;
@@ -202,15 +206,15 @@ void imprimePreOrdem(no *raiz){
     }
 }
 
-no *getRaiz(arvore *arv){
+no *getRaiz(avl *arv){
     return arv->sentinela;
 }
 
-int getNumElementos(arvore *arv){
+int getNumElementos(avl *arv){
     return arv->qtd;
 }
 
-void processaCarga(arvore *arv, char *nomeArquivo){
+void processaCarga(avl *arv, char *nomeArquivo){
     int valor;
     FILE *arquivo = fopen(nomeArquivo, "r");
     while(fscanf(arquivo, "%d", &valor) == 1)insereNo(arv, valor);
