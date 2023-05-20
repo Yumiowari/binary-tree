@@ -96,7 +96,6 @@ int insereNo(avl *arv, int valor){
     return 1;
 }
 
-// Revisar!
 int removeNo(avl *arv, int valor){
 // em poucas palavras, no caso em que houver filhos, utiliza nós auxiliares para reunir os
 // nós soltos para manter a estrutura da árvore após a remoção
