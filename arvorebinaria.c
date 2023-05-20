@@ -1,20 +1,20 @@
+/*
+    Implementação de Árvore Binária
+    Por: Rafael Renó Corrêa
+    Última atualização: 19 de maio de 2023
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "arvorebinaria.h"
-
-/*
-    Implementação de árvore binária!
-    Rafael Renó Corrêa
-    3 de maio de 2023
-    2022000403
-*/
 
 struct no{
     int chave;
     struct no *esq; // filho da esquerda (< raiz)
     struct no *dir; // filho da direita (> raiz)
     struct no *pai; // raiz do nó (> || < raiz)
+    int fb; // fator de balanceamento
 };
 
 struct arvore{
@@ -22,49 +22,40 @@ struct arvore{
     int qtd; // guarda a quantidade total de nós da árvore
 };
 
-arvore *criaArvore(){ // OK
+arvore *criaArvore(){
     // iniciando o ponteiro para a árvore
     arvore *arv = (arvore*) malloc(sizeof(arvore));
     if(arv != NULL){
-    // iniciando a sentinela (ponteiro do tipo nó)
-        no *sen = (no*) malloc(sizeof(no));
-        sen->esq = NULL;
-        sen->dir = NULL;
-        sen->pai = NULL;
-        sen->chave = -1000;
-
-        arv->sentinela = sen;
-        arv->qtd = 0; // a sentinela não é um elemento da árvore.
-    }
+    	// iniciando a sentinela (ponteiro do tipo nó)
+	no *sen = (no*) malloc(sizeof(no));
+	if(sen != NULL){
+        	arv->sentinela = sen;
+        	arv->qtd = 0; // a sentinela não é um elemento da árvore.
+        	sen->esq = NULL;
+        	sen->dir = NULL;
+        	sen->pai = NULL;
+        	sen->chave = -1000;
+        }else return NULL;
+    }else return NULL;
 
     return arv;
 }
 
-int insereNo(arvore *arv, int valor){ // ERRO AQUI!
+int insereNo(arvore *arv, int valor){
     if(arv == NULL)return 0;
-    no *n = (no*) malloc(sizeof(no));
+    no *novoNo = (no*) malloc(sizeof(no));
     // nó a ser inserido
+    if(novoNo == NULL)return 0;
+
+    novoNo->dir = NULL;
+    novoNo->esq = NULL;
+    novoNo->pai = NULL;
+    novoNo->chave = valor;
     
-    n->dir = NULL;
-    n->esq = NULL;
-    n->pai = NULL;
-    n->chave=valor;
-
-    no *atual = arv->sentinela;
-    no *anterior = NULL;
-    // auxiliares para percorrer a árvore
-
-    //if(arv->sentinela->dir == NULL){
-    if(arv->qtd == 0){ // mais rápido!
-    // se nenhum elemento foi inserido
-        arv->sentinela->dir = n;
-        // o nó será o pai
-        n->pai = arv->sentinela;
-        // o pai do nó será a sentinela
-        arv->qtd++;
-        // incrementa em um a quantidade de elementos!
-
-    }else{
+    if(arv->sentinela->dir != NULL){
+    	no *atual = arv->sentinela->dir; // dentro do condicional é mais inteligente!
+    	no *anterior = atual->pai;
+    	// auxiliares para percorrer a árvore
         while(atual != NULL){
         // até que alcance uma folha da árvore
             anterior = atual;
@@ -76,19 +67,28 @@ int insereNo(arvore *arv, int valor){ // ERRO AQUI!
 
         if(valor < anterior->chave){
         // nesta instrução, o anterior é o pai da folha encontrada
-            anterior->esq = n;
-            n->pai = anterior;
+            anterior->esq = novoNo;
+            novoNo->pai = anterior;
             // se for maior que a raiz
         }else{
-            anterior->dir = n;
-            n->pai = anterior;
+            anterior->dir = novoNo;
+            novoNo->pai = anterior;
             // se for menor
         }
-
+    }else{ // inserir na árvore vazia acontece em apenas um caso!
+    	// se nenhum elemento foi inserido
+        arv->sentinela->dir = novoNo;
+        // o nó será o pai
+        novoNo->pai = arv->sentinela;
+        // o pai do nó será a sentinela
         arv->qtd++;
-        // incrementa o nó inserido
-
+        
+        return 1;
+        // se houver apenas um elemento, a função atualizaFB_insercao() é impossível!
     }
+	
+    arv->qtd++;
+    // incrementa em um a quantidade de elementos!
 
     return 1;
 }
@@ -109,49 +109,44 @@ int removeNo(arvore *arv, int valor){
     // Isto é viável pois, uma vez que os valores foram inseridos ordenadamente na árvore,
     // a busca binária é possível.
         anterior = atual;
-        if(valor > atual->chave){
-            atual = atual->dir;
-        }else atual = atual->esq;
+        if(valor < atual->chave){
+            atual = atual->esq;
+        }else atual = atual->dir;
     }
 
     if(atual == NULL)return -1; // se terminou numa folha
 
-    if(atual->dir == NULL && atual->esq == NULL){
+    if(atual->esq == NULL && atual->dir == NULL){
     // se o nó a ser removido não tiver filhos
         if(anterior == NULL){
             arv->sentinela = NULL;
-        }else if(atual == anterior->dir){
-            anterior->dir = NULL;
-        }else anterior->esq = NULL;
+        }else if(atual == anterior->esq){
+            anterior->esq = NULL;
+        }else anterior->dir = NULL;
 
         free(atual);
         atual = NULL;
 
-        arv->qtd--;
-        // decrementa o nó removido
-
-    }else if(atual->dir == NULL || atual->esq == NULL){ // deve ocorrer depois da condição acima!
+    }else if(atual->esq == NULL || atual->dir == NULL){ // deve ocorrer depois da condição acima!
     // se houver apenas um filho
         no *filho;
-        if(atual->dir == NULL){
-            filho = atual->esq;
+        if(atual->esq == NULL){
+            filho = atual->dir;
             filho->pai = anterior;
         }else{
-            filho = atual->dir;
+            filho = atual->esq;
             filho->pai = anterior;
         }
         if(anterior == NULL){
             arv->sentinela = filho;
-        }else if(atual == anterior->dir){
-            anterior->dir = filho;
-        }else anterior->esq = filho;
+        }else if(atual == anterior->esq){
+            anterior->esq = filho;
+        }else anterior->dir = filho;
 
         free(atual);
         atual = NULL;
 
-        arv->qtd--;
-
-    }else if(atual->dir != NULL && atual->esq != NULL){
+    }else{
     // se houver dois filhos
         no *sucessor = atual->dir;
         anterior = atual;
@@ -170,10 +165,9 @@ int removeNo(arvore *arv, int valor){
 
         free(sucessor);
         sucessor = NULL;
-
-        arv->qtd--;
-
     }
+
+    arv->qtd--;
 
     return 1;
 }
@@ -181,11 +175,11 @@ int removeNo(arvore *arv, int valor){
 void imprimeOrdem(no *raiz){
     if(raiz == NULL)return;
     if(raiz->pai == NULL){
-        imprimePreOrdem(raiz->esq);
+        //imprimePreOrdem(raiz->esq); nunca ocorrerá!
         imprimePreOrdem(raiz->dir);
-    }else{
+    }else if(raiz->pai != NULL){
         imprimeOrdem(raiz->esq);
-        printf("%d - %d \n", raiz->chave, raiz->pai->chave);
+        printf("%d - %d\n", raiz->chave, raiz->pai->chave);
         imprimeOrdem(raiz->dir);
     }
 }
@@ -193,10 +187,10 @@ void imprimeOrdem(no *raiz){
 void imprimePreOrdem(no *raiz){
     if(raiz == NULL)return;
     if(raiz->pai == NULL){
-        imprimePreOrdem(raiz->esq);
+        //imprimePreOrdem(raiz->esq); nunca ocorrerá
         imprimePreOrdem(raiz->dir);
-    }else{
-        printf("%d - %d \n", raiz->chave, raiz->pai->chave);
+    }else if(raiz->pai != NULL){ // senão for a sentinela
+        printf("%d - %d\n", raiz->chave, raiz->pai->chave);
         imprimePreOrdem(raiz->esq);
         imprimePreOrdem(raiz->dir);
     }
@@ -217,4 +211,3 @@ void processaCarga(arvore *arv, char *nomeArquivo){
     // enquanto houverem elementos para serem lidos, os insere na árvore
     fclose(arquivo);
 }
-
