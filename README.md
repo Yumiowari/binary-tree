@@ -1,4 +1,4 @@
-# Árvore Binária
+# Árvore Binária de _Adelson Velsky_ e _Landis_
 
 Trata-se de uma implementação de **Árvore Binária** de _Adelson Velsky_ e _Landis_ (**AVL**) em _C_.
 
