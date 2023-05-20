@@ -1,6 +1,6 @@
 # Árvore Binária de _Adelson Velsky_ e _Landis_
 
-## Trata-se de uma implementação de **Árvore Binária** de _Adelson Velsky_ e _Landis_ (**AVL**) em _C_,
+## Trata-se de uma implementação de Árvore AVL em _C_,
 
 realizada como atividade de **Algoritmos e Estruturas de Dados II** em faculdade na **UNIFEI**.
 
