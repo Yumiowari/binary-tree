@@ -28,7 +28,17 @@ no *getRaiz(avl *arv);
 int getNumElementos(avl *arv);
 
 // Função que lê um arquivo com números inteiros e carrega na árvore
-void processaCarga(avl *arv, char *nomeArquivo);
+// Se o tipo for 1, a função deve chamar insereNo()
+// Se o tipo for 2, a função deve chamar removeNo()
+// Retorna -2 se o arquivo não pôde ser lido
+// Se o tipo for 1, insere os elementos na árvore e retorna os valores obtidos com o processamento da inserção
+//  Retorna 1 se a inserção foi realizada com sucesso
+//  Retorna 0 se não foi possível realizar a inserção
+// Se o tipo for 2, remove os elementos da árvore e retorna os valores obtidos com o processamento da remoção
+//  Retorna 1 se o elemento foi removido
+//  Retorna 0 se a árvore estiver vazia
+// Os valores retornados são tratados na main
+int processaCarga(avl *arv, char *nomeArquivo, int tipo);
 
 /*********** FUNÇÕES DA AVL **************/
 

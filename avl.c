@@ -127,6 +127,8 @@ int removeNo(avl *arv, int valor){
             anterior->esq = NULL;
         }else anterior->dir = NULL;
 
+        atualizaFB_remocao(arv, atual->pai, valor);
+
         free(atual);
         atual = NULL;
 
@@ -145,6 +147,8 @@ int removeNo(avl *arv, int valor){
         }else if(atual == anterior->esq){
             anterior->esq = filho;
         }else anterior->dir = filho;
+
+        atualizaFB_remocao(arv, atual->pai, valor);
 
         free(atual);
         atual = NULL;
@@ -166,6 +170,8 @@ int removeNo(avl *arv, int valor){
             if(sucessor->dir != NULL)sucessor->dir->pai = atual;
         }
 
+        atualizaFB_remocao(arv, anterior, sucessor->chave);
+
         free(sucessor);
         sucessor = NULL;
     }
@@ -178,10 +184,7 @@ int removeNo(avl *arv, int valor){
 void imprimeOrdem(no *raiz){
     if(raiz == NULL)return;
     if(raiz->pai == NULL){
-        //imprimePreOrdem(raiz->esq); nunca ocorrerá!
-        imprimePreOrdem(raiz->dir);
-    }else if(raiz->pai != NULL){
-        imprimeOrdem(raiz->esq);
+        //imprimePreOrdem(raiz->esq); nunca ocorrerá!valor
         printf("%d - %d - %d\n", raiz->chave, raiz->pai->chave, raiz->fb);
         imprimeOrdem(raiz->dir);
     }
@@ -207,11 +210,27 @@ int getNumElementos(avl *arv){
     return arv->qtd;
 }
 
-void processaCarga(avl *arv, char *nomeArquivo){
+int processaCarga(avl *arv, char *nomeArquivo, int tipo){
+    int ok; // feedback
+    int flag = 0;
     int valor;
     FILE *arquivo = fopen(nomeArquivo, "r");
-    while(fscanf(arquivo, "%d", &valor) == 1)insereNo(arv, valor);
-    // enquanto houverem elementos para serem lidos, os insere na árvore
+    if(arquivo == NULL)return -2;
+    if(tipo == 1){ // chama insereNo()
+        if(arv == NULL)return 0; // não havia árvore
+        while(fscanf(arquivo, "%d", &valor) == 1)insereNo(arv, valor);
+        // enquanto houverem elementos para serem lidos, os insere na árvore
+        return 1; // sucedeu
+    }else if(tipo == 2){
+        while(fscanf(arquivo, "%d", &valor) == 1){
+            ok = removeNo(arv, valor);
+            if(ok == 0)return 0; // a árvore estava vazia
+            if(ok == -1)flag++; // incrementa a flag para caso algum elemento não existia na árvore
+        }
+        // enquanto houverem elementos para serem lidos, os remove da árvore
+        if(flag > 0)return 0;
+        return 1; // sucedeu
+    }
     fclose(arquivo);
 }
 
@@ -328,4 +347,23 @@ void atualizaFB_insercao(avl *arv, no *novoNo){
     }while((aux->pai != arv->sentinela) && (aux->fb != 0) && (aux->fb != 2) && (aux->fb != -2));
     if((aux->fb == 2) || (aux->fb == -2))balanceamento(arv, aux);
 }
+
+void atualizaFB_remocao(avl *arv, no *pai, int chave){
+    no *aux = pai;
+    do{
+        if(chave < aux->chave){ // filho à esquerda
+            aux->pai->fb++;
+        }else{ // filho à direita
+            aux->pai->fb--;
+        }
+        aux = aux->pai;
+    }while((aux->pai != arv->sentinela) && (aux->fb != 0) && (aux->fb != 2) && (aux->fb != -2));
+    if((aux->fb == 2) || (aux->fb == -2)){ // desbalanceou
+        balanceamento(arv, aux);
+        if((aux->pai != arv->sentinela) && (aux->pai->fb == 0)){
+            atualizaFB_remocao(arv, aux->pai->pai, chave);
+        }
+    }
+}
+
 
