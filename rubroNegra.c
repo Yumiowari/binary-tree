@@ -99,84 +99,52 @@ int insereNo(rb *arv, int valor){
     return 1;
 }
 
-int removeNo(rb *arv, int valor){
-// em poucas palavras, no caso em que houver filhos, utiliza nós auxiliares para reunir os
-// nós soltos para manter a estrutura da árvore após a remoção
-    if(arv == NULL)return 0;
+int removeNo(rb *arv, int valor) {
+    if(arv == NULL || arv->sentinela->dir == NULL)return 0;
 
-    no *atual = arv->sentinela;
-    no *anterior = NULL;
-    // inicia dois auxiliares para percorrer a árvore
+    no *noRemover = arv->sentinela->dir;
 
-    if(atual == NULL)return 0;
-
-    while(atual != NULL && atual->chave != valor){
-    // até que alcance uma folha ou o chave buscada, percorre a árvore em direção à posição.
-    // Isto é viável pois, uma vez que os valores foram inseridos ordenadamente na árvore,
-    // a busca binária é possível.
-        anterior = atual;
-        if(valor < atual->chave){
-            atual = atual->esq;
-        }else atual = atual->dir;
+    while(noRemover != NULL && noRemover->chave != valor){
+        if(valor < noRemover->chave){
+            noRemover = noRemover->esq;
+        }else noRemover = noRemover->dir;
     }
 
-    if(atual == NULL)return -1; // se terminou numa folha
+    if(noRemover == NULL)return -1;
 
-    if(atual->esq == NULL && atual->dir == NULL){
-    // se o nó a ser removido não tiver filhos
-        if(anterior == NULL){
-            arv->sentinela = NULL;
-        }else if(atual == anterior->esq){
-            anterior->esq = NULL;
-        }else anterior->dir = NULL;
+    if(noRemover->esq != NULL && noRemover->dir != NULL){
+        no *sucessor = noRemover->dir;
+        while(sucessor->esq != NULL)sucessor = sucessor->esq;
 
-        free(atual);
-        atual = NULL;
+        noRemover->chave = sucessor->chave;
+        noRemover = sucessor;
+    }
 
-    }else if(atual->esq == NULL || atual->dir == NULL){ // deve ocorrer depois da condição acima!
-    // se houver apenas um filho
-        no *filho;
-        if(atual->esq == NULL){
-            filho = atual->dir;
-            filho->pai = anterior;
-        }else{
-            filho = atual->esq;
-            filho->pai = anterior;
-        }
-        if(anterior == NULL){
-            arv->sentinela = filho;
-        }else if(atual == anterior->esq){
-            anterior->esq = filho;
-        }else anterior->dir = filho;
+    no *filho = NULL;
+    if(noRemover->esq != NULL){
+        filho = noRemover->esq;
+    }else filho = noRemover->dir;
+    if(noRemover->cor == 'P'){
+        if(filho==NULL){
+            noRemover->cor = 'P';
+        }else noRemover->cor = filho->cor;
+        
+        balanceamentoRemocao(arv, noRemover, noRemover->pai, valor);
+    }
 
-        free(atual);
-        atual = NULL;
-
+    if(noRemover->pai == NULL){
+        arv->sentinela->dir = filho;
+        if(filho != NULL)filho->pai = NULL;
     }else{
-    // se houver dois filhos
-        no *sucessor = atual->dir;
-        anterior = atual;
-        while(sucessor->esq != NULL){
-            anterior = sucessor;
-            sucessor = sucessor->esq;
-        } 
-        atual->chave = sucessor->chave;
-        if(anterior->esq == sucessor){
-            anterior->esq = sucessor->dir;
-            if(sucessor->dir != NULL)sucessor->dir->pai = atual;
-        }else{
-            anterior->dir = sucessor->dir;
-            if(sucessor->dir != NULL)sucessor->dir->pai = atual;
-        }
+        if(noRemover == noRemover->pai->esq){
+            noRemover->pai->esq = filho;
+        }else noRemover->pai->dir = filho;
 
-        free(sucessor);
-        sucessor = NULL;
+        if(filho != NULL)filho->pai = noRemover->pai;
     }
 
-    // balanceamento na remoção por fazer
-
+    free(noRemover);
     arv->qtd--;
-
     return 1;
 }
 
@@ -314,6 +282,70 @@ void balanceamentoInsercao(rb *arv, no *noDesbal){
         }
         arv->sentinela->dir->cor = 'P';
     }
+}
+
+void balanceamentoRemocao(rb *arv, no *noDesbal, no *pai, int valor){
+    while(noDesbal != arv->sentinela->dir && (noDesbal == NULL || noDesbal->cor == 'P')){
+        if(noDesbal == pai->esq){
+            no *irmao = pai->dir;
+
+            if(irmao->cor == 'V'){
+                irmao->cor = 'P';
+                pai->cor = 'V';
+                rotacaoEsq(arv, pai);
+                irmao = pai->dir;
+            }
+
+            if((irmao->esq == NULL || irmao->esq->cor == 'P') && (irmao->dir == NULL || irmao->dir->cor == 'P')){
+                irmao->cor = 'V';
+                noDesbal = pai;
+                pai = noDesbal->pai;
+            }else{
+                if(irmao->dir == NULL || irmao->dir->cor == 'P'){
+                    irmao->esq->cor = 'P';
+                    irmao->cor = 'V';
+                    rotacaoDir(arv, irmao);
+                    irmao = pai->dir;
+                }
+
+                irmao->cor = pai->cor;
+                pai->cor = 'P';
+                irmao->dir->cor = 'P';
+                rotacaoEsq(arv, pai);
+                noDesbal = arv->sentinela->dir;
+            }
+        }else{
+            no *irmao = pai->esq;
+
+            if (irmao->cor == 'V'){
+                irmao->cor = 'P';
+                pai->cor = 'V';
+                rotacaoDir(arv, pai);
+                irmao = pai->esq;
+            }
+
+            if((irmao->dir == NULL || irmao->dir->cor == 'P') && (irmao->esq == NULL || irmao->esq->cor == 'P')){
+                irmao->cor = 'V';
+                noDesbal = pai;
+                pai = noDesbal->pai;
+            }else{
+                if(irmao->esq == NULL || irmao->esq->cor == 'P'){
+                    irmao->dir->cor = 'P';
+                    irmao->cor = 'V';
+                    rotacaoEsq(arv, irmao);
+                    irmao = pai->esq;
+                }
+
+                irmao->cor = pai->cor;
+                pai->cor = 'P';
+                irmao->esq->cor = 'P';
+                rotacaoDir(arv, pai);
+                noDesbal = arv->sentinela->dir;
+            }
+        }
+    }
+
+    if(noDesbal != NULL)noDesbal->cor = 'P';
 }
 
 
