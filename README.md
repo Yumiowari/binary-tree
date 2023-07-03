@@ -1,7 +1,11 @@
-# Árvore Binária
+# Trabalho-Algoritmo
+Trabalho de Algoritmos e Estrutura de dados II. Devemos implementar uma B-Tree seguindo as 
+diretrizes descritas no arquivo Trabalho_Pratico_2.pdf.
 
-## Trata-se de uma implementação de Árvore Binária em _C_.
+# Guia
+O repositorio esta divido em 3 diretorios principais:
+- data  (contem o arquivo de dados e codigo para gera-lo)
+- src   (contem o codigo de implementaçao)
+- stats (codigo para testar eficiencia entre os metodos)
 
-Realizada como atividade de **Algoritmos e Estruturas de Dados II** em faculdade na **UNIFEI**.
 
-Todavia, será mantida e atualizada para excelência em otimização e rapidez.
